@@ -5,17 +5,14 @@ Functions to detect spots in 2-d and 3-d.
 
 import warnings
 
-import scipy.ndimage as ndi
 import numpy as np
+import scipy.ndimage as ndi
+from skimage.measure import label, regionprops
 
-import apifish.stack as stack
+from apifish.filter.image import log_filter
+from apifish.formatting import utils
 
-from .spot_utils import get_object_radius_pixel
-from .spot_utils import get_breaking_point
-
-from skimage.measure import regionprops
-from skimage.measure import label
-
+from .spot_utils import get_breaking_point, get_object_radius_pixel
 
 # ### Main function ###
 
@@ -87,7 +84,7 @@ def detect_spots(
 
     """
     # check parameters
-    stack.check_parameter(
+    utils.check_parameter(
         threshold=(int, float, type(None)),
         remove_duplicate=bool,
         return_threshold=bool,
@@ -99,7 +96,7 @@ def detect_spots(
 
     # if one image is provided we enlist it
     if not isinstance(images, list):
-        stack.check_array(
+        utils.check_array(
             images, ndim=[2, 3], dtype=[np.uint8, np.uint16, np.float32, np.float64]
         )
         ndim = images.ndim
@@ -108,7 +105,7 @@ def detect_spots(
     else:
         ndim = None
         for i, image in enumerate(images):
-            stack.check_array(
+            utils.check_array(
                 image, ndim=[2, 3], dtype=[np.uint8, np.uint16, np.float32, np.float64]
             )
             if i == 0:
@@ -303,7 +300,7 @@ def _detect_spots_from_images(
     masks = []
     for image in images:
         # filter image
-        image_filtered = stack.log_filter(image, log_kernel_size)
+        image_filtered = log_filter(image, log_kernel_size)
         images_filtered.append(image_filtered)
 
         # get pixels value
@@ -394,10 +391,10 @@ def local_maximum_detection(image, min_distance):
 
     """
     # check parameters
-    stack.check_array(
+    utils.check_array(
         image, ndim=[2, 3], dtype=[np.uint8, np.uint16, np.float32, np.float64]
     )
-    stack.check_parameter(min_distance=(int, float, tuple, list))
+    utils.check_parameter(min_distance=(int, float, tuple, list))
 
     # compute the kernel size (centered around our pixel because it is uneven)
     if isinstance(min_distance, (tuple, list)):
@@ -453,11 +450,11 @@ def spots_thresholding(image, mask_local_max, threshold, remove_duplicate=True):
 
     """
     # check parameters
-    stack.check_array(
+    utils.check_array(
         image, ndim=[2, 3], dtype=[np.uint8, np.uint16, np.float32, np.float64]
     )
-    stack.check_array(mask_local_max, ndim=[2, 3], dtype=bool)
-    stack.check_parameter(threshold=(float, int, type(None)), remove_duplicate=bool)
+    utils.check_array(mask_local_max, ndim=[2, 3], dtype=bool)
+    utils.check_parameter(threshold=(float, int, type(None)), remove_duplicate=bool)
 
     if threshold is None:
         mask = np.zeros_like(image, dtype=bool)
@@ -528,10 +525,10 @@ def automated_threshold_setting(image, mask_local_max):
 
     """
     # check parameters
-    stack.check_array(
+    utils.check_array(
         image, ndim=[2, 3], dtype=[np.uint8, np.uint16, np.float32, np.float64]
     )
-    stack.check_array(mask_local_max, ndim=[2, 3], dtype=bool)
+    utils.check_array(mask_local_max, ndim=[2, 3], dtype=bool)
 
     # get threshold values we want to test
     thresholds = _get_candidate_thresholds(image.ravel())
@@ -601,7 +598,7 @@ def _get_spot_counts(thresholds, value_spots):
     """
     # count spots for each threshold
     count_spots = np.log([np.count_nonzero(value_spots > t) for t in thresholds])
-    count_spots = stack.centered_moving_average(count_spots, n=5)
+    count_spots = utils.centered_moving_average(count_spots, n=5)
 
     # the tail of the curve unnecessarily flatten the slop
     count_spots = count_spots[count_spots > 2]
@@ -659,7 +656,7 @@ def get_elbow_values(
 
     """
     # check parameters
-    stack.check_parameter(
+    utils.check_parameter(
         voxel_size=(int, float, tuple, list, type(None)),
         spot_radius=(int, float, tuple, list, type(None)),
         log_kernel_size=(int, float, tuple, list, type(None)),
@@ -668,7 +665,7 @@ def get_elbow_values(
 
     # if one image is provided we enlist it
     if not isinstance(images, list):
-        stack.check_array(
+        utils.check_array(
             images, ndim=[2, 3], dtype=[np.uint8, np.uint16, np.float32, np.float64]
         )
         ndim = images.ndim
@@ -677,7 +674,7 @@ def get_elbow_values(
     else:
         ndim = None
         for i, image in enumerate(images):
-            stack.check_array(
+            utils.check_array(
                 image, ndim=[2, 3], dtype=[np.uint8, np.uint16, np.float32, np.float64]
             )
             if i == 0:
@@ -785,7 +782,7 @@ def get_elbow_values(
     masks = []
     for image in images:
         # filter image
-        image_filtered = stack.log_filter(image, log_kernel_size)
+        image_filtered = log_filter(image, log_kernel_size)
         images_filtered.append(image_filtered)
 
         # get pixels value

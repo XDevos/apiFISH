@@ -8,21 +8,20 @@ then use gaussian functions to correct a misdetection in these regions.
 import warnings
 
 import numpy as np
+from skimage.measure import label, regionprops
 
-import apifish.stack as stack
+from apifish.filter.image import remove_background_gaussian
+from apifish.formatting import utils
 
-from .spot_utils import build_reference_spot
-from .spot_utils import get_object_radius_pixel
-from .spot_modeling import modelize_spot
-from .spot_modeling import precompute_erf
-from .spot_modeling import gaussian_2d
-from .spot_modeling import _initialize_grid_2d
-from .spot_modeling import gaussian_3d
-from .spot_modeling import _initialize_grid_3d
-
-from skimage.measure import regionprops
-from skimage.measure import label
-
+from .spot_modeling import (
+    _initialize_grid_2d,
+    _initialize_grid_3d,
+    gaussian_2d,
+    gaussian_3d,
+    modelize_spot,
+    precompute_erf,
+)
+from .spot_utils import build_reference_spot, get_object_radius_pixel
 
 # ### Main function ###
 
@@ -106,11 +105,11 @@ def decompose_dense(
 
     """
     # check parameters
-    stack.check_array(
+    utils.check_array(
         image, ndim=[2, 3], dtype=[np.uint8, np.uint16, np.float32, np.float64]
     )
-    stack.check_array(spots, ndim=2, dtype=[np.float32, np.float64, np.int32, np.int64])
-    stack.check_parameter(
+    utils.check_array(spots, ndim=2, dtype=[np.float32, np.float64, np.int32, np.int64])
+    utils.check_parameter(
         voxel_size=(int, float, tuple, list),
         spot_radius=(int, float, tuple, list),
         kernel_size=(int, float, tuple, list, type(None)),
@@ -180,9 +179,7 @@ def decompose_dense(
 
     # denoise the image
     if kernel_size is not None:
-        image_denoised = stack.remove_background_gaussian(
-            image=image, sigma=kernel_size
-        )
+        image_denoised = remove_background_gaussian(image=image, sigma=kernel_size)
     else:
         image_denoised = image.copy()
 
@@ -305,11 +302,11 @@ def get_dense_region(image, spots, voxel_size, spot_radius, beta=1):
 
     """
     # check parameters
-    stack.check_array(
+    utils.check_array(
         image, ndim=[2, 3], dtype=[np.uint8, np.uint16, np.float32, np.float64]
     )
-    stack.check_array(spots, ndim=2, dtype=[np.float32, np.float64, np.int32, np.int64])
-    stack.check_parameter(
+    utils.check_array(spots, ndim=2, dtype=[np.float32, np.float64, np.int32, np.int64])
+    utils.check_parameter(
         voxel_size=(int, float, tuple, list),
         spot_radius=(int, float, tuple, list),
         beta=(int, float),
@@ -564,10 +561,10 @@ def simulate_gaussian_mixture(
 
     """
     # check parameters
-    stack.check_array(
+    utils.check_array(
         image, ndim=[2, 3], dtype=[np.uint8, np.uint16, np.float32, np.float64]
     )
-    stack.check_parameter(
+    utils.check_parameter(
         candidate_regions=np.ndarray,
         voxel_size=(int, float, tuple, list),
         sigma=(int, float, tuple, list),

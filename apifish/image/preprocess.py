@@ -7,20 +7,13 @@ Functions used to format and clean any input loaded in apifish.
 import warnings
 
 import numpy as np
-
-from .utils import check_array
-from .utils import check_parameter
-from .utils import check_range_value
-
 import skimage
-from skimage import img_as_ubyte
-from skimage import img_as_float32
-from skimage import img_as_float64
-from skimage import img_as_uint
+from skimage import img_as_float32, img_as_float64, img_as_ubyte, img_as_uint
 from skimage.exposure import rescale_intensity
 from skimage.transform import resize
 from sklearn.utils.fixes import parse_version
 
+from ..formatting.utils import check_array, check_parameter, check_range_value
 
 # TODO replace 'tensor' by 'image'
 

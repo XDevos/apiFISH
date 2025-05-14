@@ -4,12 +4,10 @@
 Utility functions for apifish.segmentation subpackage.
 """
 
-import apifish.stack as stack
-
 import numpy as np
-
 from skimage.measure import regionprops
 
+from apifish.formatting import utils
 
 # ### Thresholding method ###
 
@@ -33,12 +31,12 @@ def thresholding(image, threshold):
 
     """
     # check parameters
-    stack.check_array(
+    utils.check_array(
         image,
         ndim=2,
         dtype=[np.uint8, np.uint16, np.int32, np.int64, np.float32, np.float64],
     )
-    stack.check_parameter(threshold=(float, int))
+    utils.check_parameter(threshold=(float, int))
 
     # discriminate nuclei from background, applying a threshold.
     image_segmented = image >= threshold
@@ -67,7 +65,7 @@ def compute_mean_diameter(image_label):
 
     """
     # check parameters
-    stack.check_array(
+    utils.check_array(
         image_label, ndim=2, dtype=[np.uint8, np.uint16, np.int32, np.int64]
     )
 
@@ -105,7 +103,7 @@ def compute_mean_convexity_ratio(image_label):
 
     """
     # check parameters
-    stack.check_array(
+    utils.check_array(
         image_label, ndim=2, dtype=[np.uint8, np.uint16, np.int32, np.int64]
     )
 
@@ -142,7 +140,7 @@ def compute_surface_ratio(image_label):
 
     """
     # check parameters
-    stack.check_array(
+    utils.check_array(
         image_label, ndim=2, dtype=[np.uint8, np.uint16, np.int32, np.int64]
     )
 
@@ -169,7 +167,7 @@ def count_instances(image_label):
 
     """
     # check parameters
-    stack.check_array(
+    utils.check_array(
         image_label, ndim=2, dtype=[np.uint8, np.uint16, np.int32, np.int64]
     )
 

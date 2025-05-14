@@ -4,18 +4,17 @@
 Class and functions to segment cells.
 """
 
-from apifish.image import augmentation
-import apifish.stack as stack
-
-from .mask_utils import thresholding
-from .postprocess import label_instances
-from .postprocess import clean_segmentation
-
 import numpy as np
-from scipy import ndimage as ndi
-
 import skimage
+from scipy import ndimage as ndi
 from sklearn.utils.fixes import parse_version
+
+from apifish.filter import image
+from apifish.formatting import utils
+from apifish.image import augmentation, preprocess, projection
+
+from .mask_postprocess import clean_segmentation, label_instances
+from .mask_utils import thresholding
 
 if parse_version(skimage.__version__) < parse_version("0.17.0"):
     from skimage.morphology import watershed
@@ -66,7 +65,7 @@ def apply_unet_distance_double(
         Resize image before segmentation. A squared image is resize to
         `target_size`. A rectangular image is resize such that its smaller
         dimension equals `target_size`.
-    test_time_augmentation : bool
+    test_time_utils : bool
         Apply test time augmentation or not. The image is augmented 8 times
         and the final segmentation is the average result over these
         augmentations.
@@ -79,10 +78,10 @@ def apply_unet_distance_double(
 
     """
     # check parameters
-    stack.check_parameter(target_size=(int, type(None)), test_time_augmentation=bool)
-    stack.check_array(nuc, ndim=2, dtype=[np.uint8, np.uint16])
-    stack.check_array(cell, ndim=2, dtype=[np.uint8, np.uint16])
-    stack.check_array(nuc_label, ndim=2, dtype=np.int64)
+    utils.check_parameter(target_size=(int, type(None)), test_time_augmentation=bool)
+    utils.check_array(nuc, ndim=2, dtype=[np.uint8, np.uint16])
+    utils.check_array(cell, ndim=2, dtype=[np.uint8, np.uint16])
+    utils.check_array(nuc_label, ndim=2, dtype=np.int64)
 
     # get original shape
     height, width = cell.shape
@@ -104,21 +103,21 @@ def apply_unet_distance_double(
         new_height = int(np.round(height * ratio))
         new_width = int(np.round(width * ratio))
         new_shape = (new_height, new_width)
-        nuc_to_process = stack.resize_image(nuc, new_shape, "bilinear")
-        cell_to_process = stack.resize_image(cell, new_shape, "bilinear")
+        nuc_to_process = preprocess.resize_image(nuc, new_shape, "bilinear")
+        cell_to_process = preprocess.resize_image(cell, new_shape, "bilinear")
         nuc_label_to_process = nuc_label.copy()
 
     # get padding marge to make it multiple of 16
-    marge_padding = stack.get_marge_padding(new_height, new_width, x=16)
+    marge_padding = preprocess.get_marge_padding(new_height, new_width, x=16)
     top, bottom = marge_padding[0]
     left, right = marge_padding[1]
     nuc_to_process = np.pad(nuc_to_process, pad_width=marge_padding, mode="symmetric")
     cell_to_process = np.pad(cell_to_process, pad_width=marge_padding, mode="symmetric")
 
     # standardize and cast cell image
-    nuc_to_process = stack.compute_image_standardization(nuc_to_process)
+    nuc_to_process = preprocess.compute_image_standardization(nuc_to_process)
     nuc_to_process = nuc_to_process.astype(np.float32)
-    cell_to_process = stack.compute_image_standardization(cell_to_process)
+    cell_to_process = preprocess.compute_image_standardization(cell_to_process)
     cell_to_process = cell_to_process.astype(np.float32)
 
     # augment images
@@ -157,17 +156,17 @@ def apply_unet_distance_double(
         # from the image augmentation
         if target_size is not None:
             if i in [0, 1, 2, 6]:
-                prediction_cell = stack.resize_image(
+                prediction_cell = preprocess.resize_image(
                     prediction_cell, (height, width), "bilinear"
                 )
-                prediction_distance = stack.resize_image(
+                prediction_distance = preprocess.resize_image(
                     prediction_distance, (height, width), "bilinear"
                 )
             else:
-                prediction_cell = stack.resize_image(
+                prediction_cell = preprocess.resize_image(
                     prediction_cell, (width, height), "bilinear"
                 )
-                prediction_distance = stack.resize_image(
+                prediction_distance = preprocess.resize_image(
                     prediction_distance, (width, height), "bilinear"
                 )
 
@@ -194,7 +193,7 @@ def apply_unet_distance_double(
     mean_prediction_distance /= max_
     mean_prediction_distance = 1 - mean_prediction_distance
     mean_prediction_distance = np.clip(mean_prediction_distance, 0, 1)
-    mean_prediction_distance = stack.cast_img_uint16(mean_prediction_distance)
+    mean_prediction_distance = preprocess.cast_img_uint16(mean_prediction_distance)
 
     # postprocess predictions
     _, cell_label_pred = from_distance_to_instances(
@@ -242,10 +241,10 @@ def from_distance_to_instances(
 
     """
     # check parameters
-    stack.check_parameter(nuc_3_classes=bool, compute_nuc_label=bool)
-    stack.check_array(label_x_nuc, ndim=2, dtype=[np.float32, np.int64])
-    stack.check_array(label_2_cell, ndim=2, dtype=np.float32)
-    stack.check_array(label_distance, ndim=2, dtype=np.uint16)
+    utils.check_parameter(nuc_3_classes=bool, compute_nuc_label=bool)
+    utils.check_array(label_x_nuc, ndim=2, dtype=[np.float32, np.int64])
+    utils.check_array(label_2_cell, ndim=2, dtype=np.float32)
+    utils.check_array(label_distance, ndim=2, dtype=np.uint16)
 
     # get nuclei labels
     if nuc_3_classes and compute_nuc_label:
@@ -253,7 +252,7 @@ def from_distance_to_instances(
         mask_nuc = label_3_nuc > 1
         nuc_label = label_instances(mask_nuc)
         nuc_label = nuc_label.astype(np.float64)
-        nuc_label = stack.dilation_filter(nuc_label, kernel_shape="disk", kernel_size=1)
+        nuc_label = image.dilation_filter(nuc_label, kernel_shape="disk", kernel_size=1)
         nuc_label = nuc_label.astype(np.int64)
         mask_nuc = nuc_label > 0
     elif not nuc_3_classes and compute_nuc_label:
@@ -316,7 +315,7 @@ def cell_watershed(image, nuc_label, threshold, alpha=0.8):
     # TODO add options for clean_segmentation
     # build cells mask
     if image.ndim == 3:
-        image_2d = stack.maximum_projection(image)
+        image_2d = projection.maximum_projection(image)
     else:
         image_2d = image
     cell_mask = thresholding(image_2d, threshold)
@@ -357,25 +356,25 @@ def get_watershed_relief(image, nuc_label, alpha):
 
     """
     # check parameters
-    stack.check_array(image, ndim=[2, 3], dtype=[np.uint8, np.uint16])
-    stack.check_array(nuc_label, ndim=2, dtype=np.int64)
-    stack.check_parameter(alpha=(int, float))
+    utils.check_array(image, ndim=[2, 3], dtype=[np.uint8, np.uint16])
+    utils.check_array(nuc_label, ndim=2, dtype=np.int64)
+    utils.check_parameter(alpha=(int, float))
 
     # use pixel intensity of the cells image
     if alpha == 1:
         # if a 3-d image is provided we sum its pixel values
-        image = stack.cast_img_float64(image)
+        image = preprocess.cast_img_float64(image)
         if image.ndim == 3:
             image = image.sum(axis=0)
         # rescale image
-        image = stack.rescale(image)
+        image = preprocess.rescale(image)
         # build watershed relief
         watershed_relief = image.max() - image
         watershed_relief[nuc_label > 0] = 0
         watershed_relief = np.true_divide(
             watershed_relief, watershed_relief.max(), dtype=np.float64
         )
-        watershed_relief = stack.cast_img_uint16(watershed_relief)
+        watershed_relief = preprocess.cast_img_uint16(watershed_relief)
 
     # use distance from the nuclei
     elif alpha == 0:
@@ -385,16 +384,16 @@ def get_watershed_relief(image, nuc_label, alpha):
         watershed_relief = np.true_divide(
             watershed_relief, watershed_relief.max(), dtype=np.float64
         )
-        watershed_relief = stack.cast_img_uint16(watershed_relief)
+        watershed_relief = preprocess.cast_img_uint16(watershed_relief)
 
     # use a combination of both previous methods
     elif 0 < alpha < 1:
         # if a 3-d image is provided we sum its pixel values
-        image = stack.cast_img_float64(image)
+        image = preprocess.cast_img_float64(image)
         if image.ndim == 3:
             image = image.sum(axis=0)
         # rescale image
-        image = stack.rescale(image)
+        image = preprocess.rescale(image)
         # build watershed relief
         relief_pixel = image.max() - image
         relief_pixel[nuc_label > 0] = 0
@@ -407,7 +406,7 @@ def get_watershed_relief(image, nuc_label, alpha):
             relief_distance, relief_distance.max(), dtype=np.float64
         )
         watershed_relief = alpha * relief_pixel + (1 - alpha) * relief_distance
-        watershed_relief = stack.cast_img_uint16(watershed_relief)
+        watershed_relief = preprocess.cast_img_uint16(watershed_relief)
 
     else:
         raise ValueError(
@@ -446,11 +445,11 @@ def apply_watershed(watershed_relief, nuc_label, cell_mask):
 
     """
     # check parameters
-    stack.check_array(
+    utils.check_array(
         watershed_relief, ndim=2, dtype=[np.uint8, np.uint16, np.int32, np.int64]
     )
-    stack.check_array(nuc_label, ndim=2, dtype=np.int64)
-    stack.check_array(cell_mask, ndim=2, dtype=bool)
+    utils.check_array(nuc_label, ndim=2, dtype=np.int64)
+    utils.check_array(cell_mask, ndim=2, dtype=bool)
 
     # segment cells
     cell_label = watershed(watershed_relief, markers=nuc_label, mask=cell_mask)

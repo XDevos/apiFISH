@@ -6,13 +6,11 @@ structures.
 """
 
 import numpy as np
-
-import apifish.stack as stack
-
-from .spot_utils import convert_spot_coordinates
-
 from sklearn.cluster import DBSCAN
 
+from apifish.formatting import utils
+
+from .spot_utils import convert_spot_coordinates
 
 # ### Detect clusters ###
 
@@ -57,8 +55,8 @@ def detect_clusters(spots, voxel_size, radius=350, nb_min_spots=4):
     # TODO check that the behavior is the same with float64 and int64
     #  coordinates
     # check parameters
-    stack.check_array(spots, ndim=2, dtype=[np.float32, np.float64, np.int32, np.int64])
-    stack.check_parameter(
+    utils.check_array(spots, ndim=2, dtype=[np.float32, np.float64, np.int32, np.int64])
+    utils.check_parameter(
         voxel_size=(int, float, tuple, list), radius=int, nb_min_spots=int
     )
 

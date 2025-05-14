@@ -5,16 +5,14 @@ Class and functions to segment nucleus.
 """
 
 import numpy as np
-
-from apifish.image import augmentation
-import apifish.stack as stack
-
-from .postprocess import label_instances
-from .postprocess import clean_segmentation
-
-from skimage.morphology.selem import disk
 from skimage.morphology import reconstruction
+from skimage.morphology.selem import disk
 
+from apifish.filter.image import dilation_filter
+from apifish.formatting import utils
+from apifish.image import augmentation, preprocess
+
+from .mask_postprocess import clean_segmentation, label_instances
 
 # ### Unet model ###
 
@@ -64,8 +62,8 @@ def apply_unet_3_classes(model, image, target_size=None, test_time_augmentation=
 
     """
     # check parameters
-    stack.check_parameter(target_size=(int, type(None)), test_time_augmentation=bool)
-    stack.check_array(image, ndim=2, dtype=[np.uint8, np.uint16])
+    utils.check_parameter(target_size=(int, type(None)), test_time_augmentation=bool)
+    utils.check_array(image, ndim=2, dtype=[np.uint8, np.uint16])
 
     # get original shape
     height, width = image.shape
@@ -85,10 +83,10 @@ def apply_unet_3_classes(model, image, target_size=None, test_time_augmentation=
         new_height = int(np.round(height * ratio))
         new_width = int(np.round(width * ratio))
         new_shape = (new_height, new_width)
-        image_to_process = stack.resize_image(image, new_shape, "bilinear")
+        image_to_process = preprocess.resize_image(image, new_shape, "bilinear")
 
     # get padding marge to make it multiple of 16
-    marge_padding = stack.get_marge_padding(new_height, new_width, x=16)
+    marge_padding = preprocess.get_marge_padding(new_height, new_width, x=16)
     top, bottom = marge_padding[0]
     left, right = marge_padding[1]
     image_to_process = np.pad(
@@ -96,7 +94,7 @@ def apply_unet_3_classes(model, image, target_size=None, test_time_augmentation=
     )
 
     # standardize and cast image
-    image_to_process = stack.compute_image_standardization(image_to_process)
+    image_to_process = preprocess.compute_image_standardization(image_to_process)
     image_to_process = image_to_process.astype(np.float32)
 
     # augment images
@@ -128,9 +126,13 @@ def apply_unet_3_classes(model, image, target_size=None, test_time_augmentation=
         # from the image augmentation
         if target_size is not None:
             if i in [0, 1, 2, 6]:
-                prediction = stack.resize_image(prediction, (height, width), "bilinear")
+                prediction = preprocess.resize_image(
+                    prediction, (height, width), "bilinear"
+                )
             else:
-                prediction = stack.resize_image(prediction, (width, height), "bilinear")
+                prediction = preprocess.resize_image(
+                    prediction, (width, height), "bilinear"
+                )
 
         # store predictions
         predictions_augmented.append(prediction)
@@ -164,7 +166,7 @@ def from_3_classes_to_instances(label_3_classes):
 
     """
     # check parameters
-    stack.check_array(label_3_classes, ndim=3, dtype=np.float32)
+    utils.check_array(label_3_classes, ndim=3, dtype=np.float32)
 
     # get classes indices
     label_3_classes = np.argmax(label_3_classes, axis=-1)
@@ -177,7 +179,7 @@ def from_3_classes_to_instances(label_3_classes):
 
     # dilate label
     label = label.astype(np.float64)
-    label = stack.dilation_filter(label, kernel_shape="disk", kernel_size=1)
+    label = dilation_filter(label, kernel_shape="disk", kernel_size=1)
     label = label.astype(np.int64)
 
     return label
@@ -222,15 +224,15 @@ def remove_segmented_nuc(image, nuc_mask, size_nuclei=2000):
 
     """
     # check parameters
-    stack.check_array(image, ndim=2, dtype=[np.uint8, np.uint16])
-    stack.check_array(nuc_mask, ndim=2, dtype=bool)
-    stack.check_parameter(size_nuclei=int)
+    utils.check_array(image, ndim=2, dtype=[np.uint8, np.uint16])
+    utils.check_array(nuc_mask, ndim=2, dtype=bool)
+    utils.check_parameter(size_nuclei=int)
 
     # store original dtype
     original_dtype = image.dtype
 
     # dilate the mask
-    mask_dilated = stack.dilation_filter(image, "disk", 10)
+    mask_dilated = dilation_filter(image, "disk", 10)
 
     # remove the unsegmented nuclei from the original image
     diff = image.copy()
@@ -250,7 +252,7 @@ def remove_segmented_nuc(image, nuc_mask, size_nuclei=2000):
     missing_mask = clean_segmentation(
         missing_mask, small_object_size=size_nuclei, fill_holes=True
     )
-    missing_mask = stack.dilation_filter(missing_mask, "disk", 20)
+    missing_mask = dilation_filter(missing_mask, "disk", 20)
 
     # TODO improve the thresholds
     # get the original pixel intensity of the unsegmented nuclei

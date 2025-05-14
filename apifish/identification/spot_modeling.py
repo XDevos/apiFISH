@@ -5,16 +5,12 @@ Functions to model spots by fitting gaussian parameters.
 """
 
 import numpy as np
-
-import apifish.stack as stack
-
-from .spot_utils import get_spot_volume
-from .spot_utils import get_spot_surface
-from .spot_utils import get_object_radius_pixel
-
-from scipy.special import erf
 from scipy.optimize import curve_fit
+from scipy.special import erf
 
+from apifish.formatting import utils
+
+from .spot_utils import get_object_radius_pixel, get_spot_surface, get_spot_volume
 
 # ### Spot modelization ###
 
@@ -58,10 +54,10 @@ def modelize_spot(reference_spot, voxel_size, spot_radius, return_coord=False):
 
     """
     # check parameters
-    stack.check_array(
+    utils.check_array(
         reference_spot, ndim=[2, 3], dtype=[np.uint8, np.uint16, np.float32, np.float64]
     )
-    stack.check_parameter(
+    utils.check_parameter(
         voxel_size=(int, float, tuple, list),
         spot_radius=(int, float, tuple, list),
         return_coord=bool,
@@ -179,10 +175,10 @@ def initialize_grid(image_spot, voxel_size, return_centroid=False):
 
     """
     # check parameters
-    stack.check_array(
+    utils.check_array(
         image_spot, ndim=[2, 3], dtype=[np.uint8, np.uint16, np.float32, np.float64]
     )
-    stack.check_parameter(voxel_size=(int, float, tuple, list), return_centroid=bool)
+    utils.check_parameter(voxel_size=(int, float, tuple, list), return_centroid=bool)
 
     # check consistency between parameters
     ndim = image_spot.ndim
@@ -863,7 +859,7 @@ def precompute_erf(ndim, voxel_size, sigma, max_grid=200):
 
     """
     # check parameters
-    stack.check_parameter(
+    utils.check_parameter(
         ndim=int,
         voxel_size=(int, float, tuple, list),
         sigma=(int, float, tuple, list),
@@ -963,11 +959,11 @@ def fit_subpixel(image, spots, voxel_size, spot_radius):
 
     """
     # check parameters
-    stack.check_array(
+    utils.check_array(
         image, ndim=[2, 3], dtype=[np.uint8, np.uint16, np.float32, np.float64]
     )
-    stack.check_array(spots, ndim=2, dtype=[np.float32, np.float64, np.int32, np.int64])
-    stack.check_parameter(
+    utils.check_array(spots, ndim=2, dtype=[np.float32, np.float64, np.int32, np.int64])
+    utils.check_parameter(
         voxel_size=(int, float, tuple, list), spot_radius=(int, float, tuple, list)
     )
 

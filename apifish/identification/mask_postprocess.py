@@ -4,16 +4,16 @@
 Postprocessing functions functions for apifish.segmentation subpackage.
 """
 
-import apifish.stack as stack
-
 import numpy as np
 from scipy import ndimage as ndi
-
 from skimage.measure import label
 from skimage.morphology import remove_small_objects
 
+from apifish.filter.image import dilation_filter, erosion_filter, median_filter
+from apifish.formatting import utils
 
 # ### Labelled images ###
+
 
 def label_instances(image_binary):
     """Count and label the different instances previously segmented in an
@@ -31,7 +31,7 @@ def label_instances(image_binary):
 
     """
     # check parameters
-    stack.check_array(image_binary, ndim=[2, 3], dtype=bool)
+    utils.check_array(image_binary, ndim=[2, 3], dtype=bool)
 
     # label instances
     image_label = label(image_binary).astype(np.int64)
@@ -58,8 +58,8 @@ def merge_labels(image_label_1, image_label_2):
 
     """
     # check parameters
-    stack.check_array(image_label_1, ndim=[2, 3], dtype=np.int64)
-    stack.check_array(image_label_2, ndim=[2, 3], dtype=np.int64)
+    utils.check_array(image_label_1, ndim=[2, 3], dtype=np.int64)
+    utils.check_array(image_label_2, ndim=[2, 3], dtype=np.int64)
 
     # count number of instances
     nb_instances_1 = image_label_1.max()
@@ -68,8 +68,10 @@ def merge_labels(image_label_1, image_label_2):
 
     # check if labels can be merged
     if nb_instances > np.iinfo(np.int64).max:
-        raise ValueError("Labels can not be merged. There are too many "
-                         "instances for a 64 bit image, labels could overlap.")
+        raise ValueError(
+            "Labels can not be merged. There are too many "
+            "instances for a 64 bit image, labels could overlap."
+        )
 
     # merge labels
     image_label_2[image_label_2 > 0] += image_label_1
@@ -81,11 +83,12 @@ def merge_labels(image_label_1, image_label_2):
 # ### Clean segmentation ###
 # TODO make it available for 3D images
 def clean_segmentation(
-        image,
-        small_object_size=None,
-        fill_holes=False,
-        smoothness=None,
-        delimit_instance=False):
+    image,
+    small_object_size=None,
+    fill_holes=False,
+    smoothness=None,
+    delimit_instance=False,
+):
     """Clean segmentation results (binary masks or integer labels).
 
     Parameters
@@ -110,12 +113,13 @@ def clean_segmentation(
 
     """
     # check parameters
-    stack.check_array(image, ndim=2, dtype=[np.int64, bool])
-    stack.check_parameter(
+    utils.check_array(image, ndim=2, dtype=[np.int64, bool])
+    utils.check_parameter(
         small_object_size=(int, type(None)),
         fill_holes=bool,
         smoothness=(int, type(None)),
-        delimit_instance=bool)
+        delimit_instance=bool,
+    )
 
     # initialize cleaned image
     image_cleaned = image.copy()
@@ -207,20 +211,22 @@ def _smooth_instance(image, radius):
     # smooth instance boundaries for a binary mask
     if image.dtype == bool:
         image_cleaned = image.astype(np.uint8)
-        image_cleaned = stack.median_filter(image_cleaned, "disk", radius)
+        image_cleaned = median_filter(image_cleaned, "disk", radius)
         image_cleaned = image_cleaned.astype(bool)
 
     # smooth instance boundaries for a labelled image
     else:
         if image.max() <= 65535 and image.min() >= 0:
             image_cleaned = image.astype(np.uint16)
-            image_cleaned = stack.median_filter(image_cleaned, "disk", radius)
+            image_cleaned = median_filter(image_cleaned, "disk", radius)
             image_cleaned = image_cleaned.astype(np.int64)
         else:
-            raise ValueError("Segmentation boundaries can't be smoothed "
-                             "because more than 65535 has been detected in "
-                             "the image. Smoothing is performed with 16-bit "
-                             "unsigned integer images.")
+            raise ValueError(
+                "Segmentation boundaries can't be smoothed "
+                "because more than 65535 has been detected in "
+                "the image. Smoothing is performed with 16-bit "
+                "unsigned integer images."
+            )
 
     return image_cleaned
 
@@ -246,8 +252,8 @@ def _delimit_instance(image):
         image = image.astype(np.float64)
 
     # erode-dilate mask
-    image_dilated = stack.dilation_filter(image, "disk", 1)
-    image_eroded = stack.erosion_filter(image, "disk", 1)
+    image_dilated = dilation_filter(image, "disk", 1)
+    image_eroded = erosion_filter(image, "disk", 1)
     if original_dtype == bool:
         borders = image_dilated & ~image_eroded
         image_cleaned = image.copy()
@@ -276,10 +282,9 @@ def remove_disjoint(image):
 
     """
     # check parameters
-    stack.check_array(
-        image,
-        ndim=[2, 3],
-        dtype=[np.uint8, np.uint16, np.int32, np.int64, bool])
+    utils.check_array(
+        image, ndim=[2, 3], dtype=[np.uint8, np.uint16, np.int32, np.int64, bool]
+    )
 
     # handle boolean array
     cast_to_bool = False
