@@ -11,7 +11,6 @@ import skimage
 from skimage import img_as_float32, img_as_float64, img_as_ubyte, img_as_uint
 from skimage.exposure import rescale_intensity
 from skimage.transform import resize
-from sklearn.utils.fixes import parse_version
 
 from ..formatting.utils import check_array, check_parameter, check_range_value
 
@@ -316,12 +315,7 @@ def cast_img_uint8(tensor):
         )
 
     # cast tensor
-    if parse_version(skimage.__version__) < parse_version("0.16.0"):
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore")
-            tensor = img_as_ubyte(tensor)
-    else:
-        tensor = img_as_ubyte(tensor)
+    tensor = img_as_ubyte(tensor)
 
     return tensor
 
@@ -380,12 +374,7 @@ def cast_img_uint16(tensor):
         )
 
     # cast tensor
-    if parse_version(skimage.__version__) < parse_version("0.16.0"):
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore")
-            tensor = img_as_uint(tensor)
-    else:
-        tensor = img_as_uint(tensor)
+    tensor = img_as_uint(tensor)
 
     return tensor
 
@@ -426,12 +415,7 @@ def cast_img_float32(tensor):
     )
 
     # cast tensor
-    if parse_version(skimage.__version__) < parse_version("0.16.0"):
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore")
-            tensor = img_as_float32(tensor)
-    else:
-        tensor = img_as_float32(tensor)
+    tensor = img_as_float32(tensor)
 
     return tensor
 

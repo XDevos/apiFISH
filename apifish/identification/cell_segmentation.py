@@ -7,7 +7,6 @@ Class and functions to segment cells.
 import numpy as np
 import skimage
 from scipy import ndimage as ndi
-from sklearn.utils.fixes import parse_version
 
 from apifish.filter import image
 from apifish.formatting import utils
@@ -16,10 +15,7 @@ from apifish.image import augmentation, preprocess, projection
 from .mask_postprocess import clean_segmentation, label_instances
 from .mask_utils import thresholding
 
-if parse_version(skimage.__version__) < parse_version("0.17.0"):
-    from skimage.morphology import watershed
-else:
-    from skimage.segmentation import watershed
+from skimage.segmentation import watershed
 
 
 # ### Unet models ###

@@ -6,14 +6,14 @@ apiFISH - Documentation
 
 .. add short description
 
-===============
-Getting started
-===============
+====
+User
+====
 
 .. panels::
     :card: + intro-card text-center
     :body: text-center p-2
-    :column: col-lg-6 col-md-6 col-sm-6 col-xs-12 p-2
+    :column: col-lg-4 col-md-4 col-sm-6 col-xs-12 p-2
 
     ---
     .. image:: _static/getting_started/Download-Icon.png
@@ -34,76 +34,13 @@ Getting started
 
     .. link-button:: getting_started/tutorials
             :type: ref
-            :text: apiFISH features step by step
-            :classes: btn-block btn-info stretched-link text-white
-
-==========
-User guide
-==========
-
-.. panels::
-    :card: + intro-card text-center
-    :body: text-center p-2
-    :column: col-lg-6 col-md-6 col-sm-6 col-xs-12 p-2
-
-    ---
-    .. image:: _static/home_page/structure.png
-       :height: 75
-
-    +++
-
-    .. link-button:: user_guide/overview
-            :type: ref
-            :text: Overview of apiFISH
-            :classes: btn-block btn-info stretched-link text-white
-
-    ---
-    .. image:: _static/home_page/user_guide.svg
-       :height: 75
-
-    +++
-
-    .. link-button:: user_guide/usage
-            :type: ref
-            :text: Usage description module by module
+            :text: Tutorials
             :classes: btn-block btn-info stretched-link text-white
 
 
 =========
-Reference
+Developer
 =========
-
-.. panels::
-    :card: + intro-card text-center
-    :body: text-center p-2
-    :column: col-lg-6 col-md-6 col-sm-6 col-xs-12 p-2
-
-    ---
-    .. image:: _static/home_page/api_reference.svg
-       :height: 75
-
-    +++
-
-    .. link-button:: reference/apidoc/modules
-            :type: ref
-            :text: API reference
-            :classes: btn-block btn-info stretched-link text-white
-
-    ---
-    .. image:: _static/home_page/glossary.jpg
-       :height: 75
-
-    +++
-
-    .. link-button:: reference/glossary
-            :type: ref
-            :text: Glossary of apiFISH specific words
-            :classes: btn-block btn-info stretched-link text-white
-
-
-===========
-Development
-===========
 
 .. panels::
     :card: + intro-card text-center
@@ -190,18 +127,18 @@ Development
    getting_started/tutorials
 
 .. toctree::
-   :caption: User Guide
-   :hidden:
-
-   user_guide/overview
-   user_guide/usage
-
-.. toctree::
    :caption: Reference
    :hidden:
+   :maxdepth: 4
 
-   reference/apidoc/modules
-   reference/glossary
+   
+   reference/apidoc/apifish.filter
+   reference/apidoc/apifish.formatting
+   reference/apidoc/apifish.identification
+   reference/apidoc/apifish.image
+   reference/apidoc/apifish.matching
+   reference/apidoc/apifish.registration
+   reference/apidoc/apifish.visualization
 
 .. toctree::
    :caption: Development

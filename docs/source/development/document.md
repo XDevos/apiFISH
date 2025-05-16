@@ -6,14 +6,8 @@
 Our documentation is structured as follows:
 
 1. Getting started: Step by step guide from installation to running an example.
-2. User guide: Detailed explanation of what *apiFISH* can do and how to do it step-by-step.
-3. Reference guide: Technical description of software, including API documentation and architecture.
-4. Contributor's guide: Description of project conventions and development tips.
-
-| Designed for  | Learn        | Work      |
-| ------------- | ------------ | --------- |
-| **User**      | Quickstart     | User guide    |
-| **Developer** | Contributor's guide | Reference |
+2. Reference guide: Technical description of software, including API documentation and architecture.
+3. Contributor's guide: Description of project conventions and development tips.
 
 ## Build documentation
 
@@ -69,7 +63,7 @@ personalise_run
 
 ## Document features
 
-When you develop a new feature, please explain what it does and how use it in the user guide. 
+When you develop a new feature, please explain what it does and how use it. 
 
 ## Comment the code
 

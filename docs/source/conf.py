@@ -15,7 +15,6 @@ import apifish
 # Sphinx import all module with autodoc but don't need these modules to build API doc
 autodoc_mock_imports = [
     "pympler",
-    "apifish",
     "dask",
     "tqdm",
     "astropy",
@@ -33,7 +32,7 @@ autodoc_mock_imports = [
 project = "apiFISH"
 copyright = "2024, Arthur Imbert, Marcelo Nollmann, Xavier Devos"
 author = "Arthur Imbert, Marcelo Nollmann, Xavier Devos"
-release = "0.6.4dev"
+release = "0.7.0"
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
@@ -42,7 +41,6 @@ extensions = [
     "sphinx.ext.autodoc",  # include documentation from docstring
     "sphinx.ext.napoleon",  # allow google or numpy docstring
     "myst_parser",  # parse markdown files to be understood by sphinx
-    "sphinxcontrib.mermaid",  # mermaid extension for MyST
     "sphinx_panels",  # for creating panels like pandas or numpy main doc page
     "nbsphinx",  # include jupyter notebook file, WARNING: uncompatible with mermaid on ReadTheDocs
     "IPython.sphinxext.ipython_console_highlighting",  # Resolve highlighting "literal_block" bug

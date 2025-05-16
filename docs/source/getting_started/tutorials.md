@@ -9,7 +9,7 @@
     :column: col-lg-6 col-md-6 col-sm-6 col-xs-12 p-2
 
     ---
-    .. image:: _static/getting_started/jupyter_logo.png
+    .. image:: ../_static/getting_started/jupyter_logo.png
        :height: 200
 
     ^^^^^^^^^^
@@ -141,20 +141,6 @@
             :text: Extract cell level results
             :classes: btn-block btn-info stretched-link text-white
 
-    ---
-    .. image:: ../_static/analyze_coord.png
-       :height: 200
-
-    ^^^^^^^^^^
-
-    Analyze coordinates
-
-    +++
-
-    .. link-button:: tutorials/notebooks/7_Analyze_coordinates
-            :type: ref
-            :text: Analyze coordinates
-            :classes: btn-block btn-info stretched-link text-white
 ```
 
 
@@ -171,5 +157,4 @@ Projection<tutorials/notebooks/3_Project_in_two_dimensions.ipynb>
 Segmentation<tutorials/notebooks/4_Segment_nuclei_and_cells.ipynb>
 Detection<tutorials/notebooks/5_Detect_spots.ipynb>
 Extract results<tutorials/notebooks/6_Extract_cell_level_results.ipynb>
-Analyse coordinates<tutorials/notebooks/7_Analyze_coordinates.ipynb>
 ```

@@ -1,5 +1,5 @@
-apifish.registration package
-============================
+apifish.registration
+====================
 
 Module contents
 ---------------

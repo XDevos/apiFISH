@@ -12,19 +12,10 @@ from ..image.preprocess import cast_img_float64
 from ..image.preprocess import cast_img_uint8
 from ..image.preprocess import cast_img_uint16
 
-import skimage
-from sklearn.utils.fixes import parse_version
-
-if parse_version(skimage.__version__) < parse_version("0.19.0"):
-    from skimage.morphology.selem import square
-    from skimage.morphology.selem import diamond
-    from skimage.morphology.selem import rectangle
-    from skimage.morphology.selem import disk
-else:
-    from skimage.morphology.footprints import square
-    from skimage.morphology.footprints import diamond
-    from skimage.morphology.footprints import rectangle
-    from skimage.morphology.footprints import disk
+from skimage.morphology.footprints import square
+from skimage.morphology.footprints import diamond
+from skimage.morphology.footprints import rectangle
+from skimage.morphology.footprints import disk
 from skimage.morphology import binary_dilation
 from skimage.morphology import dilation
 from skimage.morphology import binary_erosion

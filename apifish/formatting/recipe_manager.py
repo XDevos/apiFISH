@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 """
-Utility functions for apifish.multistack subpackage.
+Recipe management (sanity checks, fitting)
 """
 
 import copy
@@ -9,8 +9,6 @@ import os
 import re
 
 from apifish.formatting import utils
-
-# ### Recipe management (sanity checks, fitting) ###
 
 
 def check_recipe(recipe, data_directory=None):

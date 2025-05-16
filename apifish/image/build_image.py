@@ -6,15 +6,15 @@ Functions used to build 4D or 5D images.
 
 import numpy as np
 
-import apifish.stack as stack
+from apifish.formatting import utils
 from apifish.image import io
 
-from ...formatting.recipe_manager import check_recipe
-from ...formatting.recipe_manager import check_datamap
-from ...formatting.recipe_manager import fit_recipe
-from ...formatting.recipe_manager import get_path_from_recipe
-from ...formatting.recipe_manager import get_nb_element_per_dimension
-from ...formatting.recipe_manager import count_nb_fov
+from ..formatting.recipe_manager import check_recipe
+from ..formatting.recipe_manager import check_datamap
+from ..formatting.recipe_manager import fit_recipe
+from ..formatting.recipe_manager import get_path_from_recipe
+from ..formatting.recipe_manager import get_nb_element_per_dimension
+from ..formatting.recipe_manager import count_nb_fov
 
 
 # TODO only read in memory one or several channels (and not the entire image)
@@ -121,7 +121,7 @@ def build_stacks(
 
     """
     # check parameters
-    stack.check_parameter(
+    utils.check_parameter(
         data_map=list,
         input_dimension=(int, type(None)),
         sanity_check=bool,
@@ -229,7 +229,7 @@ def build_stack(
     """
     # check parameters
     check_recipe(recipe)
-    stack.check_parameter(
+    utils.check_parameter(
         input_folder=str,
         input_dimension=(int, type(None)),
         i_fov=int,
@@ -241,7 +241,7 @@ def build_stack(
 
     # check the validity of the loaded tensor
     if sanity_check:
-        stack.check_array(
+        utils.check_array(
             tensor,
             dtype=[
                 np.uint8,
@@ -563,7 +563,7 @@ def build_stack_no_recipe(paths, input_dimension=None, sanity_check=False):
 
     """
     # check parameters
-    stack.check_parameter(
+    utils.check_parameter(
         paths=(str, list), input_dimension=(int, type(None)), sanity_check=bool
     )
 
@@ -572,7 +572,7 @@ def build_stack_no_recipe(paths, input_dimension=None, sanity_check=False):
 
     # check the validity of the loaded tensor
     if sanity_check:
-        stack.check_array(
+        utils.check_array(
             tensor,
             dtype=[
                 np.uint8,
