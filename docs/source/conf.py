@@ -27,6 +27,7 @@ autodoc_mock_imports = [
     "numba",
     "pylab",
     "skimage",
+    "pandas",
 ]
 
 project = "apiFISH"
